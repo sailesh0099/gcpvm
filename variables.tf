@@ -1,0 +1,2 @@
+variable "MachineType" {}
+variable "vmName" {}
