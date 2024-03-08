@@ -5,13 +5,10 @@ on:
   workflow_dispatch:
     # Define inputs that are required for the manual trigger
     inputs:
-      instanceName:
+      vmName:
         description: 'Name of the AWS Instance'  # What's this input for?
         required: true  # Is it optional or required?
-      awsRegion:
-        description: 'AWS Region for the instance'
-        required: true
-      instanceType:
+      MachineType:
         description: 'AWS instance type'
         required: true
       action:
@@ -20,7 +17,7 @@ on:
 # Jobs to be executed in this workflow
 jobs:
   # Job for applying the ec2 instance
-  apply_ec2:
+  apply_vm:
     # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
     
@@ -33,6 +30,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: latest
+    - name: Authenticate with GCP
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
       
     # Initialize Terraform 
     - name: Terraform Init
@@ -52,7 +59,7 @@ jobs:
     # Apply the Terraform plan
     - name: Terraform vars
     - name: terraform apply
-      run: terraform apply -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -var instanceType=${{ github.event.inputs.instanceType }} -auto-approve
+      run: terraform apply -var vmName=${{ github.event.inputs.vmName }} -var MachineType=${{ github.event.inputs.MachineType }} -auto-approve
       working-directory: .
 
   # Destroying the  ec2 instance
@@ -79,5 +86,5 @@ jobs:
     # Destroy all resources 
     - name: Terraform Destroy
     - name: terraform apply
-      run: terraform destroy -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -auto-approve
+      run: terraform destroy -var vmName=${{ github.event.inputs.vmName }} -auto-approve
       working-directory: .
