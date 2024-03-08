@@ -1,11 +1,11 @@
-resource "google_service_account" "default" {
-  account_id   = "my-custom-sa"
-  display_name = "Custom SA for VM Instance"
+provider "google" {
+  project = "driven-backbone-415804"
+  region  = "us-central1"  # Change to your desired region
 }
 
 resource "google_compute_instance" "default" {
-  name         = "my-instance"
-  machine_type = "n2-standard-2"
+  name         = var.vmName
+  machine_type = var.MachineType
   zone         = "us-central1-a"
 
   tags = ["foo", "bar"]
@@ -30,17 +30,5 @@ resource "google_compute_instance" "default" {
     access_config {
       // Ephemeral public IP
     }
-  }
-
-  metadata = {
-    foo = "bar"
-  }
-
-  metadata_startup_script = "echo hi > /test.txt"
-
-  service_account {
-    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    email  = google_service_account.default.email
-    scopes = ["cloud-platform"]
   }
 }
